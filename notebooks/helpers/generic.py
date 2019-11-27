@@ -71,10 +71,8 @@ def calculateInputResistance(cellbuilder, params = None):
     
     resistances = []
     baseline = maxValues[0][0]
-    print(baseline)
     for pair in maxValues[1:]:
         vmax, amp = pair
-        print(vmax, amp)
         resistances.append((vmax - baseline)/amp)
         
     return np.array(resistances)
