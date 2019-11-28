@@ -1,6 +1,8 @@
 from neuron import h, gui
 from matplotlib import pyplot
 import numpy as np
+import pandas as pd
+import copy
 
 def stimulate(cellbuilder, param):
     cell = cellbuilder()
@@ -23,18 +25,34 @@ def stimulate(cellbuilder, param):
     h.run()
     return {"v": np.array(v_vec), "t": np.array(t_vec) ,"aps": np.array(a_vec)}
 
+def frameTrace(trace):
+    exclude_keys = ['t', 'v/t',"v","aps"]
+    new_d = {k: trace[k] for k in set(list(trace.keys())) - set(exclude_keys)}
+    return pd.DataFrame.from_dict(new_d, orient="index")
+        
+        
+
+def timetoframe(params, timepoint):
+    time = params["t"].max() - params["t"].min()
+    hertz = params["t"].shape[0]/time
+    return int(hertz * timepoint)
+    
+    
+def frametotime(timeline, frame):
+    framecount = timeline.shape[0]
+    starttime = timeline.min()
+    endtime = timeline.max()
+    timecount = endtime - starttime
+    timepoint = starttime + (timecount/framecount)*frame
+    return timepoint
+        
+    
 def calculateInputResistance(cellbuilder, params = None):
     if not params:
         params = [{"delay":100,"dur":500,"amp": 0 + i*0.01} for i in range(0,7)]
     
     outputs = []
-    
-    def timetoframe(params, timepoint):
-        time = params["t"].max()
-        hertz = params["t"].shape[0]/time
-        return int(hertz * timepoint)
-
-    
+        
     for param in params:
         cell = cellbuilder()
         singlepulse = h.IClamp(cell.soma(0.5))
@@ -76,21 +94,17 @@ def calculateInputResistance(cellbuilder, params = None):
         resistances.append((vmax - baseline)/amp)
         
     return np.array(resistances)
-        
+
     
 def isolateTime(params, timepoint, area = 5):
     
-    def timetoframe(params, timepoint):
-        time = params["t"].max()
-        hertz = params["t"].shape[0]/time
-        return int(hertz * timepoint)
-
+    newtrace = copy.copy(params)
     start = timetoframe(params, timepoint - area)
     end = timetoframe(params, timepoint + area)
     
-    params["t"] = params["t"][start:end]
-    params["v"] = params["v"][start:end]
-    return params
+    newtrace["t"] = params["t"][start:end]
+    newtrace["v"] = params["v"][start:end]
+    return newtrace
 
 
 def plotTrace(trace):
