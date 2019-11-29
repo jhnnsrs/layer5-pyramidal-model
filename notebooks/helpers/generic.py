@@ -23,7 +23,7 @@ def stimulate(cellbuilder, param):
     apc.record(a_vec)
     h.tstop = 800
     h.run()
-    return {"v": np.array(v_vec), "t": np.array(t_vec) ,"aps": np.array(a_vec)}
+    return {"v": np.array(v_vec), "t": np.array(t_vec) ,"aps": np.array(a_vec), "cellbuilder": cellbuilder, "params": param}
 
 def frameTrace(trace):
     exclude_keys = ['t', 'v/t',"v","aps"]
@@ -32,9 +32,9 @@ def frameTrace(trace):
         
         
 
-def timetoframe(params, timepoint):
-    time = params["t"].max() - params["t"].min()
-    hertz = params["t"].shape[0]/time
+def timetoframe(timeline, timepoint):
+    time = timeline.max() - timeline.min()
+    hertz = timeline.shape[0]/time
     return int(hertz * timepoint)
     
     
@@ -85,7 +85,7 @@ def calculateInputResistance(cellbuilder, params = None):
         start = traces["params"]["delay"]
         duration = traces["params"]["dur"]
         
-        maxValues.append([traces["v"][timetoframe(traces,start):timetoframe(traces,start+duration)].max(),traces["params"]["amp"]])
+        maxValues.append([traces["v"][timetoframe(traces["t"],start):timetoframe(traces["t"],start+duration)].max(),traces["params"]["amp"]])
     
     resistances = []
     baseline = maxValues[0][0]
@@ -99,8 +99,8 @@ def calculateInputResistance(cellbuilder, params = None):
 def isolateTime(params, timepoint, area = 5):
     
     newtrace = copy.copy(params)
-    start = timetoframe(params, timepoint - area)
-    end = timetoframe(params, timepoint + area)
+    start = timetoframe(params["t"], timepoint - area)
+    end = timetoframe(params["t"], timepoint + area)
     
     newtrace["t"] = params["t"][start:end]
     newtrace["v"] = params["v"][start:end]
