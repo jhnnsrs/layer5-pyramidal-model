@@ -9,7 +9,6 @@ import copy
 from importlib import reload
 from .rheobase import *
 from .generic import *
-from .stimulation import *
 
 def find_first_nearest_index_for_value(array, value):
         idx = (np.abs(array - value)).argmin()
@@ -192,3 +191,21 @@ def plotApParameters(test, deriv=False):
                    fancybox=True, shadow=True, ncol=1)
     pyplot.show()
 
+
+    
+def findFirstApWithinMS(cellbuilder,ampstep = 0.025,ms = 15,steps = 20,delay = 100,dur = 500):
+    foundtrace = None
+                        
+    baselinetrace = { "dur": dur, "delay": delay, "amp": 0}
+    baselinetrace = stimulate(cellbuilder, baselinetrace)
+    timetrace = baselinetrace["t"]
+    for i in range(0,steps):
+        under = { "dur": dur, "delay": delay, "amp": ampstep * i}
+        trace = stimulate(cellbuilder, under)
+        if trace["aps"].size > 0:
+            if trace["aps"][0] < delay + ms:
+                foundtrace = trace
+                break
+
+    return foundtrace
+            

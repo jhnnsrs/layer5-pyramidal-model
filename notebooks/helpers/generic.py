@@ -47,9 +47,9 @@ def frametotime(timeline, frame):
     return timepoint
         
     
-def calculateInputResistance(cellbuilder, params = None):
+def calculateInputResistance(cellbuilder, params = None, mult=-0.005, iterations=10 , startoffset=300, endoffset=100 , delay=100, duration=500, plot=True):
     if not params:
-        params = [{"delay":100,"dur":500,"amp": 0 + i*0.01} for i in range(0,7)]
+        params = [{"delay":delay,"dur":duration,"amp": 0 + mult*i} for i in range(0,iterations)]
     
     outputs = []
         
@@ -72,27 +72,79 @@ def calculateInputResistance(cellbuilder, params = None):
         apc.record(a_vec)
         
         
-        h.tstop = 800
+        h.tstop = delay + duration + 300
         h.run()
         outputs.append({"v": np.array(v_vec), "t": np.array(t_vec) ,"aps": np.array(a_vec), "params": param})
      
-    maxValues = []
+    values = []
     for traces in outputs:
         if traces["aps"].shape[0] > 1 : 
             print("This Trace Contains APS do not regard", traces["params"])
             break
             
-        start = traces["params"]["delay"]
-        duration = traces["params"]["dur"]
+        startx = traces["params"]["delay"]
+        durationx = traces["params"]["dur"]
         
-        maxValues.append([traces["v"][timetoframe(traces["t"],start):timetoframe(traces["t"],start+duration)].max(),traces["params"]["amp"]])
+        vcurvestable = traces["v"][timetoframe(traces["t"],startx+startoffset):timetoframe(traces["t"],startx+durationx-endoffset)]
+        vcurvemaxdef = traces["v"][timetoframe(traces["t"],startx):timetoframe(traces["t"],startx+startoffset)]
+        stablevalue = vcurvestable.mean()
+        maxvalue = vcurvemaxdef.min() if mult < 0 else vcurvemaxdef.max()
+        
+                            
+        values.append([stablevalue,maxvalue,traces["params"]["amp"]])
+    
     
     resistances = []
-    baseline = maxValues[0][0]
-    for pair in maxValues[1:]:
-        vmax, amp = pair
-        resistances.append((vmax - baseline)/amp)
+    baselinestable = values[0][0]
+    others = values[1:]
+    for pair in others:
+            stablev, maxvalue, amp = pair
+            resistances.append([amp,abs((stablev - baselinestable))/abs(amp),abs((maxvalue - baselinestable))/abs(amp)])
+            
+    
+    if plot is True:
+        fig = pyplot.figure(figsize=(15,9)) # Default figsize is (8,6)
+        ax = pyplot.subplot(121)
+        for trace in outputs:
+            ax.plot(trace["t"], trace["v"], label="Amp {0:.3f}".format(trace["params"]["amp"]))
+        ax.axvline(delay+startoffset, label="Start Mean", linestyle="-")
+        ax.axvline(delay+duration-endoffset, label="End Mean" , linestyle="-")
+        ax.set_xlabel('time (ms)')
+        ax.set_ylabel('mV')
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
+        ax.set_title("Voltage Graphs of " + cellbuilder.__name__ + " Cell")
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                  fancybox=True, shadow=True, ncol=4)
+        pyplot.show()
+
         
+
+        ax2 = pyplot.subplot(122)
+        ax2.plot(
+            [item[0] for item in resistances],
+            [item[1] for item in resistances], label="Stable"
+            )
+        ax2.plot(
+            [item[0] for item in resistances],
+            [item[2] for item in resistances], label="MaxDef"
+            )
+
+        resistancemeanstable = np.array([item[1] for item in resistances]).mean()
+        resistancemeanmax = np.array([item[2] for item in resistances]).mean()
+        ax2.set_title("Input Resistances of " + cellbuilder.__name__ + " Cell")
+        ax2.axhline(resistancemeanstable, color="green", label="Stable Mean {0:.2f} mOhm".format(resistancemeanstable))
+        ax2.axhline(resistancemeanmax, color="red", label="MaxDef Mean {0:.2f} mOhm".format(resistancemeanmax))
+        ax2.set_xlabel('mA')
+        ax2.set_ylabel('mOhm')
+
+        box = ax2.get_position()
+        ax2.set_position([box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
+        ax2.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                  fancybox=True, shadow=True, ncol=2)
+
+    
+    
     return np.array(resistances)
 
     
