@@ -66,7 +66,6 @@ def calculateInputResistance(cellbuilder, params = None, mult=-0.005, iterations
         v_vec = h.Vector()
         a_vec = h.Vector()# Membrane potential vector
         t_vec = h.Vector()  
-        v2_vec = h.Vector()# Time stamp vector
         v_vec.record(cell.soma(0.5)._ref_v)
         t_vec.record(h._ref_t)
         apc.record(a_vec)
@@ -90,7 +89,7 @@ def calculateInputResistance(cellbuilder, params = None, mult=-0.005, iterations
         stablevalue = vcurvestable.mean()
         maxvalue = vcurvemaxdef.min() if mult < 0 else vcurvemaxdef.max()
         
-                            
+        print("MaxDef for" + str(traces["params"]["amp"]) + " is" + str(maxvalue))                   
         values.append([stablevalue,maxvalue,traces["params"]["amp"]])
     
     

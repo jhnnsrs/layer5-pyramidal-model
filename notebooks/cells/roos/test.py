@@ -9,24 +9,27 @@ import numpy as np
 
 # M-Current (Kv7.2/7.3) KCNQ2 and KCNQ3 NICHT MUSKARINERG
 # which activates when an excitatory stimulus depolarizes the neuron toward spike threshold, repolarizes the membrane back toward resting potential, and suppresses firing (Rogawski, 2000; Wang et al., 1998). IM is a non-inactivating K+ current that is active at subthreshold membrane potentials and has been implicated in dampening repetitive firing and general neuronal excitability (Brown and Passmore, 2009)
-
-
+# Here it is the Kv7.mod
+Kv7_soma=1
+Kv7_dend=1
+Kv7_ais=7
 
 
 # Initial Set
-Vrest = -75.35 # Set for RMP
-celsius = 25.0  # for in vitro opt # 25
-
-
-h.celsius = celsius
+Vrest = -75.33842520399517 # Calculated from the resting Potential through rmp.caluclateRMP()
+h.celsius = 25.0  # for in vitro opt # 25
 
 # Geometric Properties 
+
 somaL = 48.4123467666
 somaDiam = 28.2149102762
 axonL = 594.292937602
 axonDiam = 1.40966286462
+
 aisL = 31.2 #TODO: Set from experimental data
 aisDiam = axonDiam
+
+# Adjusted Axon Length
 adjustedAxonL = axonL - aisL
 adjustedAxonDiam = axonDiam
 
@@ -57,6 +60,11 @@ adjustedAxonDiam = axonDiam
 # K-D (delayed rectifier potassium current (sustained efflux)  SUFFIX kdmc SUFFIX kdr
 
 # K-M (muscarinic-activated potassium current) 
+# Here it is the Kv7.mod
+Kv7_soma=1
+Kv7_dend=1
+Kv7_ais=7
+
 
 # BK (big conductance calcium-activated potassium current) (Kole: Kca1.1) SUFFIX KBK
 # is the Kca1.1 in koles model acitvated by calcium
@@ -94,6 +102,10 @@ sk_distribution_ais = np.linspace(1,1,100) #Constant (not known)
 
 # KA Section (Harnett et all)
 
+
+
+
+
 # Adjusted Axon Length
 adjustedAxonL = axonL - aisL
 adjustedAxonDiam = axonDiam
@@ -103,15 +115,24 @@ apicDiam = 1.5831889597
 bdendL = 299.810775175
 bdendDiam = 2.2799248874
 
-
-
 # passive properties 
-Ra = 123 # .Ra Axial resistance (normal rat subthalamic nuceol 123 ohm-cm) #TODO: Literature
-axonRM = aisRM = somaRM = apicRM = bdendRM = 15000
-Cm = 1.0
-v_init = -85
-spinescale = 1.5
+axonCap = 1.01280903702
+aisCap = 1.01280903702
+somaCap = 1.78829677463
+apicCap = 1.03418636866
+bdendCap = 1.89771901209
 
+# .Ra Axial resistance (normal rat subthalamic nuceol 123 ohm-cm) #TODO: Literature
+rall = 114.510490019
+
+
+#axonRM = 3945.2107187
+#aisRM = 3945.2107187
+#somaRM = 18501.7540916
+#apicRM = 10751.193413
+#bdendRM = 13123.00174
+
+axonRM = aisRM = somaRM = apicRM = bdendRM = 13000
 
 # eSodium reversal potential calculated on T(295.15K) z(1) x{out}(124mM NaCL + 1.25 mM NaH2Po4 + 26 mM NaH2Co3) x{in}(10 mM Na-phosphocreatine + 0.3 mM Na-GTP)
 p_ena = 68.16371 #mV
@@ -119,10 +140,17 @@ p_ena = 68.16371 #mV
 p_ek = -97.55644 #mV
 
 
+
+# Na, K reversal potentials calculated from BenS internal/external solutions via Nernst eq.
+#p_ek = -104.0  # these reversal potentials for in vitro conditions
+#p_ena = 42.0
+
+
 # Ih Channels Conductance 680 fS, 550 N / m2, expontentially increasing # modeled by a tenfold increased single channel conductance (6.8ps) but normal densitry (kole 2006)
 
 # h-current
-gbar_h = 0.000140956438043 * 1
+h.erev_ih = -47.0  # global
+gbar_h = 0.000140956438043 * 20
 h_gbar_tuft = 0.00565  # mho/cm^2 (based on Harnett 2015 J Neurosci)
 
 # d-current
@@ -285,11 +313,11 @@ class SPI6(object):
     def set_props(self):
         self.set_geom()
         # cm - can differ across locations
-        self.axon.cm = Cm
-        self.ais.cm = Cm
-        self.soma.cm = Cm
-        self.Bdend.cm = Cm
-        for sec in self.apic: sec.cm = Cm
+        self.axon.cm = axonCap
+        self.ais.cm = aisCap
+        self.soma.cm = somaCap
+        self.Bdend.cm = bdendCap
+        for sec in self.apic: sec.cm = apicCap
         # g_pas == 1.0/rm - can differ across locations
         self.axon.g_pas = 1.0 / axonRM
         self.ais.g_pas = 1.0 / aisRM
@@ -299,8 +327,7 @@ class SPI6(object):
         for sec in self.all_sec:
             sec.ek = p_ek  # K+ current reversal potential (mV)
             sec.ena = p_ena  # Na+ current reversal potential (mV)
-            sec.Ra = Ra; # citroyplasmic resisitry resistance
-            sec.e_pas = Vrest
+            sec.Ra = rall; # Axial resistance
             sec.gbar_nax = gbar_nax  # Na
             sec.gbar_kdr = gbar_kdr  # KDR
             sec.vhalfn_kdr = kdr_vhalfn  # KDR kinetics

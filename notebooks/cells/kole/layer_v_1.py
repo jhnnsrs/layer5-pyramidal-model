@@ -1,5 +1,4 @@
 # simplified corticospinal cell model (6 compartment) according to Neymotin 2017
-
 from neuron import h
 from math import exp, log
 import numpy as np
@@ -14,19 +13,44 @@ import numpy as np
 
 
 # Initial Set
-Vrest = -75.35 # Set for RMP
-celsius = 25.0  # for in vitro opt # 25
+Vrest = -75.33842520399517 # Calculated from the resting Potential through rmp.caluclateRMP()
+h.celsius = 25.0  # for in vitro opt # 25
 
 
-h.celsius = celsius
+celcius = 37
+Ri = 100
+Cm = 0.9
+Rm = 150000
+v_init= -88
+spinescale = 2
+
+
+na_myelin=80 # in dendrites pS/um2
+Km_soma=5 # units in pS/um2
+Km_axon=50
+
+Kv_soma=20 #(HVA Kv current, units in pS/um2)
+Kv_axon=2000
+
+Kv1_soma=0.01 #0.01 mOhm/cm2 = 100 pS/um2 (LVA-Kv current)
+Kv1_axon=0.20 
+
+spinescale=2
+
+vshift_na=10 #provides AP threshold of ~ -60 mV at soma 
+vshift_nax=10
 
 # Geometric Properties 
+
 somaL = 48.4123467666
 somaDiam = 28.2149102762
 axonL = 594.292937602
 axonDiam = 1.40966286462
+
 aisL = 31.2 #TODO: Set from experimental data
 aisDiam = axonDiam
+
+# Adjusted Axon Length
 adjustedAxonL = axonL - aisL
 adjustedAxonDiam = axonDiam
 
@@ -94,6 +118,10 @@ sk_distribution_ais = np.linspace(1,1,100) #Constant (not known)
 
 # KA Section (Harnett et all)
 
+
+
+
+
 # Adjusted Axon Length
 adjustedAxonL = axonL - aisL
 adjustedAxonDiam = axonDiam
@@ -103,15 +131,24 @@ apicDiam = 1.5831889597
 bdendL = 299.810775175
 bdendDiam = 2.2799248874
 
-
-
 # passive properties 
-Ra = 123 # .Ra Axial resistance (normal rat subthalamic nuceol 123 ohm-cm) #TODO: Literature
-axonRM = aisRM = somaRM = apicRM = bdendRM = 15000
-Cm = 1.0
-v_init = -85
-spinescale = 1.5
+axonCap = 1.01280903702
+aisCap = 1.01280903702
+somaCap = 1.78829677463
+apicCap = 1.03418636866
+bdendCap = 1.89771901209
 
+# .Ra Axial resistance (normal rat subthalamic nuceol 123 ohm-cm) #TODO: Literature
+rall = 114.510490019
+
+
+#axonRM = 3945.2107187
+#aisRM = 3945.2107187
+#somaRM = 18501.7540916
+#apicRM = 10751.193413
+#bdendRM = 13123.00174
+
+axonRM = aisRM = somaRM = apicRM = bdendRM = 13000
 
 # eSodium reversal potential calculated on T(295.15K) z(1) x{out}(124mM NaCL + 1.25 mM NaH2Po4 + 26 mM NaH2Co3) x{in}(10 mM Na-phosphocreatine + 0.3 mM Na-GTP)
 p_ena = 68.16371 #mV
@@ -119,45 +156,19 @@ p_ena = 68.16371 #mV
 p_ek = -97.55644 #mV
 
 
+
+# Na, K reversal potentials calculated from BenS internal/external solutions via Nernst eq.
+#p_ek = -104.0  # these reversal potentials for in vitro conditions
+#p_ena = 42.0
+
+
 # Ih Channels Conductance 680 fS, 550 N / m2, expontentially increasing # modeled by a tenfold increased single channel conductance (6.8ps) but normal densitry (kole 2006)
 
 # h-current
-gbar_h = 0.000140956438043 * 1
+h.erev_ih = -47.0  # global
+gbar_h = 0.000140956438043 * 20
 h_gbar_tuft = 0.00565  # mho/cm^2 (based on Harnett 2015 J Neurosci)
 
-# d-current
-gbar_kdmc = 0.000447365630734
-kdmc_gbar_axonm = 20
-kdmc_gbar_aism = 20
-
-# spiking currents
-gbar_nax = 0.0345117294903
-nax_gbar_axonm = 10.0
-nax_gbar_aism = 5.0
-gbar_kdr = 0.0131103978049
-kdr_gbar_axonm = 5.0
-kdr_gbar_aism = 5.0
-
-# A few kinetic params changed vis-a-vis kdr.mod defaults:
-kdr_vhalfn = 11.6427471384
-gbar_kap = 0.0898600246397
-kap_gbar_axonm = 5.0
-kap_gbar_aism = 5.0
-
-# A few kinetic params changed vis-a-vis kap.mod defaults:
-kap_vhalfn = 32.7885075379
-kap_tq = -52.0967985869
-kap_vhalfl = -59.7867409796  # global!!
-
-# other ion channel parameters 
-cal_gcalbar = 4.41583533572e-06
-can_gcanbar = 4.60717910591e-06
-calginc = 1.0
-h_lambda = 325.0
-kBK_gpeak = 5.09733585163e-05
-kBK_caVhminShift = 43.8900261407
-cadad_depth = 0.119408607923
-cadad_taur = 99.1146852282
 
 
 ###############################################################################
@@ -285,11 +296,11 @@ class SPI6(object):
     def set_props(self):
         self.set_geom()
         # cm - can differ across locations
-        self.axon.cm = Cm
-        self.ais.cm = Cm
-        self.soma.cm = Cm
-        self.Bdend.cm = Cm
-        for sec in self.apic: sec.cm = Cm
+        self.axon.cm = axonCap
+        self.ais.cm = aisCap
+        self.soma.cm = somaCap
+        self.Bdend.cm = bdendCap
+        for sec in self.apic: sec.cm = apicCap
         # g_pas == 1.0/rm - can differ across locations
         self.axon.g_pas = 1.0 / axonRM
         self.ais.g_pas = 1.0 / aisRM
@@ -299,8 +310,7 @@ class SPI6(object):
         for sec in self.all_sec:
             sec.ek = p_ek  # K+ current reversal potential (mV)
             sec.ena = p_ena  # Na+ current reversal potential (mV)
-            sec.Ra = Ra; # citroyplasmic resisitry resistance
-            sec.e_pas = Vrest
+            sec.Ra = rall; # Axial resistance
             sec.gbar_nax = gbar_nax  # Na
             sec.gbar_kdr = gbar_kdr  # KDR
             sec.vhalfn_kdr = kdr_vhalfn  # KDR kinetics
@@ -316,14 +326,12 @@ class SPI6(object):
 
     def insert_conductances(self):
         for sec in self.all_sec:
-            sec.insert('k_ion')
-            sec.insert('na_ion')
-            sec.insert('pas')  # passive
-            sec.insert('nax')  # Na current
-            sec.insert('kdr')  # K delayed rectifier current
-            sec.insert('kap')  # K-A current
+            sec.insert('Kv1')
+            sec.insert('Km')
+            sec.insert('Kv')  
+            sec.insert('pas')  
         for sec in [self.Adend3, self.Adend2, self.Adend1, self.Bdend, self.soma]:
-            sec.insert('ih')  # h-current
+            sec.insert('na')  # h-current
             sec.insert('ca_ion')  # calcium channels
             sec.insert('cal')  # cal_mig.mod
             sec.insert('can')  # can_mig.mod
