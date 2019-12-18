@@ -2,10 +2,10 @@ version: "3.7"
 
 services:
   neuron:
-    build: neural
+    image: jhnnsrs/neural:latest
     command: jupyter lab --port=90 --ip=0.0.0.0 --allow-root --notebook-dir=/notebooks/
-    environment:
-      - HOME=home
+    env_file:
+      - neural.env
     volumes:
       - ./notebooks:/notebooks
     ports:

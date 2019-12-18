@@ -56,7 +56,9 @@ adjustedAxonDiam = axonDiam
 
 # K-D (delayed rectifier potassium current (sustained efflux)  SUFFIX kdmc SUFFIX kdr
 
-# K-M (muscarinic-activated potassium current) 
+# K-M (muscarinic-activated potassium current) (Kole: Kv7?
+
+
 
 # BK (big conductance calcium-activated potassium current) (Kole: Kca1.1) SUFFIX KBK
 # is the Kca1.1 in koles model acitvated by calcium
