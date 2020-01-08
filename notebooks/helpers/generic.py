@@ -1,8 +1,10 @@
-from neuron import h, gui
-from matplotlib import pyplot
+import copy
+
 import numpy as np
 import pandas as pd
-import copy
+from matplotlib import pyplot
+from neuron import h
+
 
 def stimulate(cellbuilder, param):
     cell = cellbuilder()

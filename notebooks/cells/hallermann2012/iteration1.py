@@ -154,6 +154,7 @@ class SPI6(object):
         self.all_sec = []
         self.set_morphology()
         self.set_biophysics()
+        #self.enhanceCalcium()
 
 
     def set_morphology(self):
@@ -348,6 +349,7 @@ class SPI6(object):
         for sec in self.all_sec:
             sec.insert('pas')  # passive
             sec.insert("charge_")
+            sec.insert("it2") # TODO: No reference for this in Hallermann
         
         # Set Parameters
         for sec in self.all_sec:

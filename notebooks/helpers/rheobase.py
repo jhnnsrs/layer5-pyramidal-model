@@ -1,6 +1,6 @@
-from neuron import h, gui
-from matplotlib import pyplot
 import numpy as np
+from neuron import h
+
 
 def calculateRheobase(cellbuilder, start= -0.2, precisiondigits = 3, intialincrease = 0.025 ,ranget = 3, notlower=True):
     

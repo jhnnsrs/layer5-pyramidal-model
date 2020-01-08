@@ -1,5 +1,5 @@
-from neuron import h, gui
 from matplotlib import pyplot
+from neuron import h
 
 
 def attach_current_clamp(cell, delay=5, dur=1, amp=.1, loc=1):

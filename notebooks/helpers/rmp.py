@@ -1,13 +1,3 @@
-from neuron import h, gui
-from matplotlib import pyplot
-import numpy as np
-from cells import layer_v_with_ais_test 
-from neuron import h, gui
-from .record import *
-import numpy as np
-import copy
-from importlib import reload
-from .rheobase import *
 from .generic import *
 
 def find_first_nearest_index_for_value(array, value):
