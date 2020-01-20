@@ -84,8 +84,10 @@ sheaths=10 #number of myelin sheaths
 # geom properties
 somaL = 48.4123467666
 somaDiam = 28.2149102762
-axonL = 594.292937602
+aisL = 20.292937602
+axonL = 594.292937602 - aisL
 axonDiam = 1.40966286462
+aisDiam = axonDiam
 apicL = 261.904636003
 apicDiam = 1.5831889597
 bdendL = 299.810775175
@@ -146,7 +148,7 @@ cadad_taur = 99.1146852282
 # SPI6 Cell
 ###############################################################################
 class SPI6(object):
-    "Simplified Corticospinal Cell Model"
+    "Kole Model in Action"
 
     def __init__(self, x=0, y=0, z=0, ID=0):
         self.x, self.y, self.z = x, y, z
@@ -173,14 +175,15 @@ class SPI6(object):
         self.apic = [self.Adend1, self.Adend2, self.Adend3]
         self.basal = [self.Bdend]
         self.alldend = [self.Adend1, self.Adend2, self.Adend3, self.Bdend]
-        self.all_sec = [ self.soma, self.axon] + self.apic + self.basal + self.alldend
+        self.all_sec = [ self.soma, self.axon, self.ais] + self.apic + self.basal + self.alldend 
 
 
         # Set Geometry here
         self.set_geom()
 
 
-        self.axon.connect(self.soma, 0.0, 0.0)
+        self.ais.connect(self.soma, 0.0, 0.0)
+        self.axon.connect(self.ais, 1.0, 0.0)
         self.Bdend.connect(self.soma, 0.5, 0.0)  # soma 0.5 to Bdend 0
         self.Adend1.connect(self.soma, 1.0, 0.0)
         self.Adend2.connect(self.Adend1, 1.0, 0.0)
@@ -200,6 +203,8 @@ class SPI6(object):
 
     def set_geom(self):
         self.axon.L = axonL
+        self.ais.L = aisL
+        self.ais.diam = aisDiam
         self.axon.diam = axonDiam
         self.soma.L = somaL
         self.soma.diam = somaDiam
@@ -266,6 +271,7 @@ class SPI6(object):
                     sec.gbar_na = na_dend * spinescale
                 else:
                     sec.gbar_na = (na_dend + (na_soma-na_dend)*(1-(d/max_distance_basal)))*spinescale
+                    
             
     def setSoma(self):
         sec = self.soma

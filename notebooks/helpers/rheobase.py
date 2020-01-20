@@ -2,7 +2,7 @@ import numpy as np
 from neuron import h
 
 
-def calculateRheobase(cellbuilder, start= -0.2, precisiondigits = 3, intialincrease = 0.025 ,ranget = 3, notlower=True):
+def calculateRheobase(cellbuilder, start= -0.2, precisiondigits = 1, intialincrease = 0.025 ,ranget = 3, notlower=True):
     
     guess = start
     increase = intialincrease
