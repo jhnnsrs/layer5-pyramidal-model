@@ -15,7 +15,7 @@ TITLE K-D channel with activation for motor cortex
 
 NEURON {
     THREADSAFE
-    SUFFIX kdmc
+    SUFFIX neykdmc
     USEION k READ ek WRITE ik
     RANGE  gbar, minf, mtau, hinf, htau, ik
     GLOBAL taumin

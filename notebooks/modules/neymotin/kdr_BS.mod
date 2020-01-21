@@ -36,7 +36,7 @@ PARAMETER {
 
 NEURON {
     THREADSAFE
-    SUFFIX kdr
+    SUFFIX neykdr
     USEION k READ ek WRITE ik
     RANGE g, gbar, sh, ninf, taun, vhalfn, ik
 }

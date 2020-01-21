@@ -37,7 +37,7 @@ PARAMETER {
 
 NEURON {
  THREADSAFE
-  SUFFIX ih
+  SUFFIX neyih
   NONSPECIFIC_CURRENT i
   RANGE i,gbar,ascale,bscale,ashift,aslope,bslope
 }
