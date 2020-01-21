@@ -90,8 +90,6 @@ def calculateInputResistance(cellbuilder, params = None, mult=-0.005, iterations
         vcurvemaxdef = traces["v"][timetoframe(traces["t"],startx):timetoframe(traces["t"],startx+startoffset)]
         stablevalue = vcurvestable.mean()
         maxvalue = vcurvemaxdef.min() if mult < 0 else vcurvemaxdef.max()
-        print(vcurvemaxdef.min())
-        print("MaxDef for" + str(traces["params"]["amp"]) + " is" + str(maxvalue))                   
         values.append([stablevalue,maxvalue,traces["params"]["amp"]])
     
     
@@ -176,4 +174,7 @@ def plotTraces(traces):
     pyplot.xlabel('time (ms)')
     pyplot.ylabel('mV')
     pyplot.show()
+
+
+
     
