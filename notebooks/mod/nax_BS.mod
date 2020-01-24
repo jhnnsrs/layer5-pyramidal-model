@@ -15,7 +15,7 @@ TITLE nax
 
 
 NEURON {
-    SUFFIX nax
+    SUFFIX neynax
     USEION na READ ena WRITE ina
     RANGE  gbar, ina, sh
 :   GLOBAL minf, hinf, mtau, htau,thinf, qinf, Rb, Rg, qg

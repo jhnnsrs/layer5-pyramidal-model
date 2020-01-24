@@ -5,7 +5,7 @@ TITLE Mech to store distance from origin as workaround for multisplit non-unifor
 : ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 NEURON {
-    SUFFIX savedist
+    SUFFIX neysavedist
     RANGE x
 }
 

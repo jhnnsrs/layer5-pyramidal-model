@@ -5,7 +5,7 @@ from neuron import h
 from helpers.generic import stimulate
 
 
-def calculateRheobase(cellbuilder, start= -0.2, precisiondigits = 1, intialincrease = 0.025 ,ranget = 3, notlower=True, plot=True):
+def calculateRheobase(cellbuilder, start= -0.2, precisiondigits = 2, intialincrease = 0.025 ,ranget = 3, notlower=True, plot=True, apthreshold = 30, doprint = False):
     
     guess = start
     increase = intialincrease
@@ -13,15 +13,14 @@ def calculateRheobase(cellbuilder, start= -0.2, precisiondigits = 1, intialincre
     latestunder = None
     for run in range(0, precisiondigits):
         
-        print("Intial guess",guess)
-        thisrange = abs(guess) *ranget/10**run
+        if doprint: print("Intial guess",guess)
+        thisrange = abs(guess)*ranget/10**(run+1)
         lower = guess - thisrange
         updatedlower = guess if lower < start and notlower else lower
-        up = guess + thisrange
-        print("Running in range ", thisrange, "from ",updatedlower, "to ", up)
-        parammaps = [{"delay":100,"dur":500,"amp": updatedlower + (thisrange/innerrun)*i} for i in range(0,innerrun)]
+        parammaps = [{"delay":100,"dur":500,"amp": updatedlower + thisrange*i} for i in range(0,innerrun)]
+        if doprint: print("Running in range ", thisrange, "from ",parammaps[0]["amp"], "to ", parammaps[innerrun-1]["amp"])
         runparams = None
-        for param in parammaps:
+        for key, param in enumerate(parammaps):
             cell = cellbuilder()
             singlepulse = h.IClamp(cell.soma(0.5))
             singlepulse.delay = param["delay"]
@@ -29,12 +28,11 @@ def calculateRheobase(cellbuilder, start= -0.2, precisiondigits = 1, intialincre
             singlepulse.amp = param["amp"]
 
             apc = h.APCount(cell.soma(0.5))
-            apc.thresh = 30
+            apc.thresh = apthreshold
 
             v_vec = h.Vector()
             a_vec = h.Vector() # Action potential vector
-            t_vec = h.Vector()  
-            v2_vec = h.Vector()# Time stamp vector
+            t_vec = h.Vector()
             v_vec.record(cell.soma(0.5)._ref_v)
             t_vec.record(h._ref_t)
             apc.record(a_vec)
@@ -43,18 +41,22 @@ def calculateRheobase(cellbuilder, start= -0.2, precisiondigits = 1, intialincre
             h.run()
             aps = np.array(a_vec)
             runparams = param
+
+            if doprint: print(key, innerrun, param["amp"], aps)
             if (aps.shape[0] > 0):
-                print("Detected first AP at", runparams["amp"] ," [mv]")
-                
+                if doprint: print(aps)
+                if doprint: print("Detected first AP at", runparams["amp"] ," [mv]")
                 break
                 
             latestunder = param
+            if key == innerrun - 1:
+                raise Exception("We did not detect anything")
         
-        guess = runparams["amp"]
+        guess = latestunder["amp"]
         increase = increase/10**run
 
-    undertrace = stimulate(cellbuilder, latestunder)
-    overtrace = stimulate(cellbuilder, runparams)
+    undertrace = stimulate(cellbuilder, latestunder, apthreshold)
+    overtrace = stimulate(cellbuilder, runparams, apthreshold)
 
     if plot is True:
         fig = pyplot.figure(figsize=(15, 9))  # Default figsize is (8,6)

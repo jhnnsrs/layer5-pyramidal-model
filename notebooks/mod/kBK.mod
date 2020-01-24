@@ -5,7 +5,7 @@ TITLE large-conductance calcium-activated potassium channel (BK)
 	:NB: concentrations in mM
 	
 NEURON {
-	SUFFIX kBK
+	SUFFIX neykBK
 	USEION k READ ek WRITE ik
 	USEION ca READ cai
 	RANGE gpeak, gkact, caPh, caPk, caPmax, caPmin

@@ -39,7 +39,7 @@ PARAMETER {
 
 
 NEURON {
-  SUFFIX cal
+  SUFFIX neycal
   USEION ca READ cai,cao WRITE ica
   RANGE gcalbar,cai, ica, gcal, ggk
   RANGE minf,tau

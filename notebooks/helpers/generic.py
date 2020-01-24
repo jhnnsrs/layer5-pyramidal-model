@@ -6,7 +6,7 @@ from matplotlib import pyplot
 from neuron import h
 
 
-def stimulate(cellbuilder, param):
+def stimulate(cellbuilder, param, apthreshold = 30):
     cell = cellbuilder()
     singlepulse = h.IClamp(cell.soma(0.5))
     singlepulse.delay = param["delay"]
@@ -14,7 +14,7 @@ def stimulate(cellbuilder, param):
     singlepulse.amp = param["amp"]
     
     apc = h.APCount(cell.soma(0.5))
-    apc.thresh = 30
+    apc.thresh = apthreshold
 
     v_vec = h.Vector()
     a_vec = h.Vector()# Membrane potential vector

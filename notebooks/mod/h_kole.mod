@@ -1,4 +1,4 @@
-+TITLE Ih-current
+TITLE Ih-current
 : modified from http://senselab.med.yale.edu/ModelDB/showmodel.cshtml?model=64195&file=%5cStochastic%5cStochastic_Na%5cih.mod
 : /u/samn/papers/jnsci_26_1677.pdf
 : 
@@ -37,7 +37,7 @@ PARAMETER {
 
 NEURON {
  THREADSAFE
-  SUFFIX ih
+  SUFFIX neyih
   NONSPECIFIC_CURRENT i
   RANGE i,gbar,ascale,bscale,ashift,aslope,bslope
 }

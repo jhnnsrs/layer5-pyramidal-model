@@ -32,7 +32,7 @@ PARAMETER {
 }
 
 NEURON {
-	SUFFIX can
+	SUFFIX neycan
 	USEION ca READ cai,cao WRITE ica
         RANGE gcanbar, ica, gcan       
         RANGE hinf,minf,taum,tauh

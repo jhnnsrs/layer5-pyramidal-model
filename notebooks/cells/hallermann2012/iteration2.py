@@ -5,9 +5,10 @@ from math import exp, log
 import numpy as np
 
 # Parameters
+from cells.baseconfig import BaseConfig
 
 
-class Config(object):
+class Config(BaseConfig):
     celsius = 33
     Ri = 80
     Cm = 1.0
@@ -149,43 +150,19 @@ class Config(object):
     cadad_taur = 99.1146852282
 
 
-
-
-
-
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            self.__setattr__(key,value)
-
-        # DISTRIBUTIONS:
-
-        self.distributions = {}
-
+    def setDistributions(self):
         self.distributions["nax_ais"] = np.concatenate(
             (np.linspace(0, self.na_ais, 40), np.linspace(self.na_ais, self.na_ais, 60)))  # Sloping Wave
-        self.distributions["na_ais"] = np.concatenate((np.linspace(self.na_soma, self.na_max, 20), np.linspace(self.na_max, 0, 20),
-                                              np.linspace(0, 0,
-                                                          60)))  # Sloping Wave #TODO: Check if it is really wanted to set expression zero
+        self.distributions["na_ais"] = np.concatenate(
+            (np.linspace(self.na_soma, self.na_max, 20), np.linspace(self.na_max, 0, 20),
+             np.linspace(0, 0,
+                         60)))  # Sloping Wave #TODO: Check if it is really wanted to set expression zero
 
         self.distributions["Kv1_ais"] = np.linspace(self.Kv1_soma, self.Kv1_ais, 100)  # Sloping Wave
         self.distributions["Kv7_ais"] = np.concatenate((np.linspace(self.Kv7_soma, self.Kv7_soma, 40),
-                                               np.linspace(self.Kv7_soma, self.Kv7_ais, 60)))  # Sloping Wave
+                                                        np.linspace(self.Kv7_soma, self.Kv7_ais, 60)))
 
 
-    def plotDistribution(self, name="nax_ais"):
-        import matplotlib.pyplot as plt
-
-        plt.plot(np.linspace(0,100,100),self.distributions[name])
-        plt.show()
-
-    def plotDistributions(self, normalized=False):
-        import matplotlib.pyplot as plt
-
-        for key, value in self.distributions.items():
-            plt.plot(np.linspace(0, 100, 100), value if not normalized else value/value.max(), label=f"{key}")
-
-        plt.legend()
-        plt.show()
 
 
 ###############################################################################
