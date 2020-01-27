@@ -12,6 +12,16 @@ def stimulate(cellbuilder, param):
     apc = h.APCount(cell.soma(0.5))
     apc.thresh = 30
 
+    synapses = []
+    for synapse in cell.c.synapses:
+        syn = h.AlphaSynapse(cell.ais(0.5))
+        syn.onset = synapse["onset"]
+        syn.tau = synapse["tau"]
+        syn.gmax = synapse["gmax"]
+        syn.e = synapse["e"]
+        syn.i = synapse["i"]
+        synapses.append(syn)
+
     v_vec = h.Vector()
     a_vec = h.Vector()# Membrane potential vector
     t_vec = h.Vector()  

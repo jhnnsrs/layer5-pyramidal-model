@@ -73,6 +73,10 @@ class Config(BaseConfig):
     def setDistributions(self):
         pass
 
+    def setSynapses(self):
+        # he effect of fast inhibitory neurons in the central nervous system of higher vertebrates is almost exclusively conveyed by a neurotransmitter called γ-aminobutyric acid, or GABA for short. A characteristic feature of inhibitory synapses is that the reversal potential Esyn is in the range of -70 to -75 mV. Thus, if the neuronal membrane potential is above the reversal potential, presynaptic spike arrival leads to a hyperpolarization of the neuron, making action poential generation less likely. However, the same presynaptic spike would lead to a depolarization of the membrane if the neuron has its membrane potential at -80 mV or below.
+        self.synapsList = [{"loc": 0.01 * i ,"onset": 20 + i*20, "tau": 0.05, "e": -70, "gmax": 0.03, "i":-0.02} for i in range(0,3)]
+
 
 ###############################################################################
 # SPI6 Cell

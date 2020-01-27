@@ -9,8 +9,13 @@ class BaseConfig(object):
         # DISTRIBUTIONS:
 
         self.distributions = {}
+        self.synapsList = {}
 
+        self.setSynapses()
         self.setDistributions()
+
+    def setSynapses(self):
+        raise NotImplementedError
 
     def setDistributions(self):
         raise NotImplementedError
@@ -29,3 +34,7 @@ class BaseConfig(object):
 
         plt.legend()
         plt.show()
+
+    @property
+    def synapses(self):
+        return self.synapsList

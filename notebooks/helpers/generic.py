@@ -16,6 +16,16 @@ def stimulate(cellbuilder, param, apthreshold = 30):
     apc = h.APCount(cell.soma(0.5))
     apc.thresh = apthreshold
 
+    synapses = []
+    for synapse in cell.c.synapses:
+        syn = h.AlphaSynapse(cell.ais(synapse["loc"]))
+        syn.onset = synapse["onset"]
+        syn.tau = synapse["tau"]
+        syn.gmax = synapse["gmax"]
+        syn.e = synapse["e"]
+        syn.i = synapse["i"]
+        synapses.append(syn)
+
     v_vec = h.Vector()
     a_vec = h.Vector()# Membrane potential vector
     t_vec = h.Vector()  
@@ -23,7 +33,7 @@ def stimulate(cellbuilder, param, apthreshold = 30):
     v_vec.record(cell.soma(0.5)._ref_v)
     t_vec.record(h._ref_t)
     apc.record(a_vec)
-    h.tstop = 800
+    h.tstop = 1000
     h.run()
     return {"v": np.array(v_vec), "t": np.array(t_vec) ,"aps": np.array(a_vec), "cellbuilder": cellbuilder, "params": param}
 
@@ -56,26 +66,7 @@ def calculateInputResistance(cellbuilder, params = None, mult=-0.005, iterations
     outputs = []
         
     for param in params:
-        cell = cellbuilder()
-        singlepulse = h.IClamp(cell.soma(0.5))
-        singlepulse.delay = param["delay"]
-        singlepulse.dur = param["dur"]
-        singlepulse.amp = param["amp"]
-
-        apc = h.APCount(cell.soma(0.5))
-        #apc.thresh = 40
-
-        v_vec = h.Vector()
-        a_vec = h.Vector()# Membrane potential vector
-        t_vec = h.Vector()  
-        v_vec.record(cell.soma(0.5)._ref_v)
-        t_vec.record(h._ref_t)
-        apc.record(a_vec)
-        
-        
-        h.tstop = delay + duration + 300
-        h.run()
-        outputs.append({"v": np.array(v_vec), "t": np.array(t_vec) ,"aps": np.array(a_vec), "params": param})
+        outputs.append(stimulate(cellbuilder, param, apthreshold=30))
      
     values = []
     for traces in outputs:
