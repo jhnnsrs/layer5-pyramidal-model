@@ -9,15 +9,28 @@ class Config(BaseConfig):
     Vrest = -88.5366550238
     celsius = 34.0  # for in vitro opt
 
+    h_somaModifier = 1
+
+
+    # Synapse settings
+    nsynapses = 0
+    synapsei = -0.0001
+    synapsee = -88
+    synapseweight = -0.0001
+
+
+
     # geom properties
     somaL = 48.4123467666
     somaDiam = 28.2149102762
     aisL = 32.00
+    aisn = 10
     axonL = 594.292937602 - aisL
     axonDiam = 1.40966286462
     aisDiam = axonDiam
     apicL = 261.904636003
     apicDiam = 1.5831889597
+    apicn = 10
     bdendL = 299.810775175
     bdendDiam = 2.2799248874
 
@@ -28,6 +41,7 @@ class Config(BaseConfig):
     bdendCap = 1.89771901209
     rall = 114.510490019
     axonRM = 3945.2107187
+    aisRM = 3945.2107187
     somaRM = 18501.7540916
     apicRM = 10751.193413
     bdendRM = 13123.00174
@@ -38,22 +52,27 @@ class Config(BaseConfig):
     # h-current
     erev_ih = -37.0  # global
     gbar_h = 0.000140956438043
+    gbar_h_soma = gbar_h * h_somaModifier
     h_gbar_tuft = 0.00565  # mho/cm^2 (based on Harnett 2015 J Neurosci)
 
     # d-current
     gbar_kdmc = 0.000447365630734
     kdmc_gbar_axonm = 20
+    kdmc_gbar_aism = 20 * 1
 
     # spiking currents
     gbar_nax = 0.0345117294903
     nax_gbar_axonm = 5.0
+    nax_gbar_aism = 5.0 * 50
     gbar_kdr = 0.0131103978049
     kdr_gbar_axonm = 5.0
+    kdr_gbar_aism = 5.0 * 2
 
     # A few kinetic params changed vis-a-vis kdr.mod defaults:
     kdr_vhalfn = 11.6427471384
     gbar_kap = 0.0898600246397
     kap_gbar_axonm = 5.0
+    kap_gbar_aism = 5.0
 
     # A few kinetic params changed vis-a-vis kap.mod defaults:
     kap_vhalfn = 32.7885075379
@@ -70,19 +89,25 @@ class Config(BaseConfig):
     cadad_depth = 0.119408607923
     cadad_taur = 99.1146852282
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.gbar_h_soma = self.gbar_h * self.h_somaModifier
+        self.axonL = 594.292937602 - self.aisL
+
     def setDistributions(self):
         pass
 
     def setSynapses(self):
-        # he effect of fast inhibitory neurons in the central nervous system of higher vertebrates is almost exclusively conveyed by a neurotransmitter called γ-aminobutyric acid, or GABA for short. A characteristic feature of inhibitory synapses is that the reversal potential Esyn is in the range of -70 to -75 mV. Thus, if the neuronal membrane potential is above the reversal potential, presynaptic spike arrival leads to a hyperpolarization of the neuron, making action poential generation less likely. However, the same presynaptic spike would lead to a depolarization of the membrane if the neuron has its membrane potential at -80 mV or below.
-        self.synapsList = [{"loc": 0.01 * i ,"onset": 20 + i*20, "tau": 0.05, "e": -70, "gmax": 0.03, "i":-0.02} for i in range(0,3)]
-
+        return [{"type": "Exp2Syn", "loc": (1/self.nsynapses)*i, "tau1": 20, "tau2": 55, "i": self.synapsei, "e":  self.synapsee , "weight": self.synapseweight} for i in range(0,self.nsynapses)]
 
 ###############################################################################
 # SPI6 Cell
 ###############################################################################
 class SPI6(object):
     "Simplified Corticospinal Cell Model"
+
+    def __name__(self):
+        return "SPI6"
 
     def __init__(self, config= Config(), x=0, y=0, z=0, ID=0):
         self.x, self.y, self.z = x, y, z
@@ -133,7 +158,7 @@ class SPI6(object):
 
 
         self.ais.connect(self.soma, 0.0, 0.0)
-        self.axon.connect(self.soma, 1.0, 0.0)
+        self.axon.connect(self.ais, 1.0, 0.0)
         self.Bdend.connect(self.soma, 0.5, 0.0)  # soma 0.5 to Bdend 0
         self.Adend1.connect(self.soma, 1.0, 0.0)
         self.Adend2.connect(self.Adend1, 1.0, 0.0)
@@ -146,8 +171,9 @@ class SPI6(object):
         self.soma.diam = self.c.somaDiam
         self.ais.L = self.c.aisL
         self.ais.diam = self.c.aisDiam
+        self.ais.nseg = self.c.aisn
 
-        for sec in self.apic: sec.L, sec.diam = self.c.apicL, self.c.apicDiam
+        for sec in self.apic: sec.L, sec.diam, sec.nseg = self.c.apicL, self.c.apicDiam, self.c.apicn
 
         self.Bdend.L = self.c.bdendL
         self.Bdend.diam = self.c.bdendDiam
@@ -162,6 +188,13 @@ class SPI6(object):
         axon.gbar_neykdr = self.c.gbar_kdr * self.c.kdr_gbar_axonm
         axon.gbar_neykap = self.c.gbar_kap * self.c.kap_gbar_axonm
 
+    def set_aisg(self):
+        ais = self.ais
+        ais.gbar_neykdmc = self.c.gbar_kdmc * self.c.kdmc_gbar_aism
+        ais.gbar_neynax = self.c.gbar_nax * self.c.nax_gbar_aism
+        ais.gbar_neykdr = self.c.gbar_kdr * self.c.kdr_gbar_aism
+        ais.gbar_neykap = self.c.gbar_kap * self.c.kap_gbar_aism
+
     def set_calprops(self, sec):
         sec.gcalbar_neycal = self.c.cal_gcalbar
         sec.gcanbar_neycan = self.c.can_gcanbar
@@ -172,7 +205,7 @@ class SPI6(object):
 
     def set_somag(self):
         sec = self.soma
-        sec.gbar_neyih = self.c.gbar_h  # Ih
+        sec.gbar_neyih = self.c.gbar_h_soma  # Ih
         self.set_calprops(sec)
         sec.gbar_neykdmc = self.c.gbar_kdmc
 
@@ -201,18 +234,20 @@ class SPI6(object):
         self.set_geom()
         # cm - can differ across locations
         self.axon.cm = self.c.axonCap
+        self.ais.cm = self.c.axonCap
         self.soma.cm = self.c.somaCap
         self.Bdend.cm = self.c.bdendCap
         for sec in self.apic: sec.cm = self.c.apicCap
         # g_pas == 1.0/rm - can differ across locations
         self.axon.g_pas = 1.0 / self.c.axonRM
+        self.ais.g_pas = 1.0 / self.c.aisRM
         self.soma.g_pas = 1.0 / self.c.somaRM
         self.Bdend.g_pas = 1.0 / self.c.bdendRM
         for sec in self.apic: sec.g_pas = 1.0 / self.c.apicRM
         for sec in self.all_sec:
             sec.ek = self.c.p_ek  # K+ current reversal potential (mV)
             sec.ena = self.c.p_ena  # Na+ current reversal potential (mV)
-            sec.Ra = self.c.rall;
+            sec.Ra = self.c.rall
             sec.e_pas = self.c.Vrest  # passive
             sec.gbar_neynax = self.c.gbar_nax  # Na
             sec.gbar_neykdr = self.c.gbar_kdr  # KDR
@@ -225,6 +260,7 @@ class SPI6(object):
         self.set_bdendg()
         self.set_apicg()
         self.set_axong()
+        self.set_aisg()
 
     def insert_conductances(self):
         for sec in self.all_sec:

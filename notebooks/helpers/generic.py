@@ -17,19 +17,30 @@ def stimulate(cellbuilder, param, apthreshold = 30):
     apc.thresh = apthreshold
 
     synapses = []
+
+    netstim0 = h.NetStim()
+    netstim0.interval = 20
+    netstim0.start = param["delay"]
+    netstim0.noise = 0
+
+    synapses = []
+    connections = []
     for synapse in cell.c.synapses:
-        syn = h.AlphaSynapse(cell.ais(synapse["loc"]))
-        syn.onset = synapse["onset"]
-        syn.tau = synapse["tau"]
-        syn.gmax = synapse["gmax"]
-        syn.e = synapse["e"]
-        syn.i = synapse["i"]
-        synapses.append(syn)
+        if synapse["type"] == "Exp2Syn":
+            syn = h.Exp2Syn(cell.ais(synapse["loc"]))
+            syn.tau1 = synapse["tau1"]
+            syn.tau2 = synapse["tau2"]
+            syn.e = synapse["e"]
+            synapses.append(syn)
+            conn = h.NetCon(netstim0, syn)
+            conn.weight[0] = synapse["weight"]
+
+            print(conn.syn)
+            connections.append(conn)
 
     v_vec = h.Vector()
     a_vec = h.Vector()# Membrane potential vector
-    t_vec = h.Vector()  
-    v2_vec = h.Vector()# Time stamp vector
+    t_vec = h.Vector()
     v_vec.record(cell.soma(0.5)._ref_v)
     t_vec.record(h._ref_t)
     apc.record(a_vec)

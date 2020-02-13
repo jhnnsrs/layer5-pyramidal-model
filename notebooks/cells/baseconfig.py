@@ -1,3 +1,4 @@
+from typing import List
 
 
 class BaseConfig(object):
@@ -11,10 +12,10 @@ class BaseConfig(object):
         self.distributions = {}
         self.synapsList = {}
 
-        self.setSynapses()
+        self.synapsList = self.setSynapses()
         self.setDistributions()
 
-    def setSynapses(self):
+    def setSynapses(self) -> List[dict]:
         raise NotImplementedError
 
     def setDistributions(self):

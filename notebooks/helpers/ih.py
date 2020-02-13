@@ -162,17 +162,21 @@ def calculateInputResistanceAndIhSag(cellbuilder, traces= None, params = None, m
         resistances.append(
             [amp, abs((stabletobase)) / abs(amp), abs((mintobase)) / abs(amp)])
 
+    ystable = [-el["stabletobase"] for el in results]
+    xmin = [-el["mintobase"] for el in results]
+
+    ymin = [-el["mintobase"] for el in results]
+    xamp = [-el["amp"] for el in results]
+
+    # This will plot a function with slope 1
+    minmin = np.array(xmin).max()
+    maxmin = np.array(xmin).min()
+    x = np.linspace(minmin, maxmin, 100)
+
+    resistancemeanstable = np.array([item[1] for item in resistances]).mean()
+    resistancemeanmax = np.array([item[2] for item in resistances]).mean()
+
     if plot is True:
-        ystable = [-el["stabletobase"] for el in results]
-        xmin = [-el["mintobase"] for el in results]
-
-        ymin = [-el["mintobase"] for el in results]
-        xamp = [-el["amp"] for el in results]
-
-        # This will plot a function with slope 1
-        minmin = np.array(xmin).max()
-        maxmin = np.array(xmin).min()
-        x = np.linspace(minmin, maxmin, 100)
 
         from matplotlib import pyplot
         fig = pyplot.figure(figsize=(22, 8))  # Default figsize is (8,6)
@@ -224,8 +228,6 @@ def calculateInputResistanceAndIhSag(cellbuilder, traces= None, params = None, m
             [item[2] for item in resistances], label="MaxDef"
         )
 
-        resistancemeanstable = np.array([item[1] for item in resistances]).mean()
-        resistancemeanmax = np.array([item[2] for item in resistances]).mean()
         ax4.set_title("Input Resistances of " + cellbuilder.__name__ + " Cell")
         ax4.axhline(resistancemeanstable, color="green", label="Stable Mean {0:.2f} mOhm".format(resistancemeanstable))
         ax4.axhline(resistancemeanmax, color="red", label="MaxDef Mean {0:.2f} mOhm".format(resistancemeanmax))
@@ -242,4 +244,4 @@ def calculateInputResistanceAndIhSag(cellbuilder, traces= None, params = None, m
 
 
 
-    return np.array(resistances)
+    return (resistancemeanstable, resistancemeanmax), (xmin, ystable)
