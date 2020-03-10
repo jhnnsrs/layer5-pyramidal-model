@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import pyplot
 from neuron import h
 
+from helpers import generic
 from helpers.generic import stimulate
 
 
@@ -20,32 +21,15 @@ def calculateRheobase(cellbuilder, start= -0.2, precisiondigits = 2, intialincre
         parammaps = [{"delay":100,"dur":500,"amp": updatedlower + thisrange*i} for i in range(0,innerrun)]
         if doprint: print("Running in range ", thisrange, "from ",parammaps[0]["amp"], "to ", parammaps[innerrun-1]["amp"])
         runparams = None
+
         for key, param in enumerate(parammaps):
-            cell = cellbuilder()
-            singlepulse = h.IClamp(cell.soma(0.5))
-            singlepulse.delay = param["delay"]
-            singlepulse.dur = param["dur"]
-            singlepulse.amp = param["amp"]
 
-            apc = h.APCount(cell.soma(0.5))
-            apc.thresh = apthreshold
-
-            v_vec = h.Vector()
-            a_vec = h.Vector() # Action potential vector
-            t_vec = h.Vector()
-            v_vec.record(cell.soma(0.5)._ref_v)
-            t_vec.record(h._ref_t)
-            apc.record(a_vec)
-
-            h.tstop = 800
-            h.run()
-            aps = np.array(a_vec)
+            trace = generic.stimulate(cellbuilder, param)
             runparams = param
-
-            if doprint: print(key, innerrun, param["amp"], aps)
-            if (aps.shape[0] > 0):
-                if doprint: print(aps)
-                if doprint: print("Detected first AP at", runparams["amp"] ," [mv]")
+            if doprint: print(key, innerrun, param["amp"], trace["aps"])
+            if (trace["aps"].shape[0] > 0):
+                if doprint: print(trace["aps"])
+                print("Detected first AP at", runparams["amp"] ," [mA]")
                 break
                 
             latestunder = param
@@ -77,4 +61,7 @@ def calculateRheobase(cellbuilder, start= -0.2, precisiondigits = 2, intialincre
     return (undertrace, overtrace)
 
 
-    
+
+
+
+       }

@@ -6,7 +6,7 @@ from matplotlib import pyplot
 from neuron import h
 
 
-def stimulate(cellbuilder, param, apthreshold = 30):
+def stimulate(cellbuilder, param, apthreshold = 30, synmodifier = 0.2):
     cell = cellbuilder()
     singlepulse = h.IClamp(cell.soma(0.5))
     singlepulse.delay = param["delay"]
@@ -16,11 +16,12 @@ def stimulate(cellbuilder, param, apthreshold = 30):
     apc = h.APCount(cell.soma(0.5))
     apc.thresh = apthreshold
 
-    synapses = []
 
     netstim0 = h.NetStim()
-    netstim0.interval = 20
+    netstim0.interval = 50
+    netstim0.number = 10
     netstim0.start = param["delay"]
+
     netstim0.noise = 0
 
     synapses = []
@@ -33,9 +34,8 @@ def stimulate(cellbuilder, param, apthreshold = 30):
             syn.e = synapse["e"]
             synapses.append(syn)
             conn = h.NetCon(netstim0, syn)
-            conn.weight[0] = synapse["weight"]
+            conn.weight[0] = synapse["weight"] * synmodifier
 
-            print(conn.syn)
             connections.append(conn)
 
     v_vec = h.Vector()
