@@ -176,6 +176,13 @@ def calculateInputResistanceAndIhSag(cellbuilder, traces= None, params = None, m
     resistancemeanstable = np.array([item[1] for item in resistances]).mean()
     resistancemeanmax = np.array([item[2] for item in resistances]).mean()
 
+    model = LinearRegression()
+    lx = np.array(xmin).reshape((-1, 1))
+    ly = np.array(ystable)
+    model.fit(lx, ly)
+    r_sq = model.score(lx, ly)
+    y_pred = model.intercept_ + model.coef_ * xmin
+
     if plot is True:
 
         from matplotlib import pyplot
@@ -187,12 +194,6 @@ def calculateInputResistanceAndIhSag(cellbuilder, traces= None, params = None, m
         ax2.set_xlabel('injected current [mA]')
         ax2.set_ylabel('min Voltage [mV]')
 
-        model = LinearRegression()
-        lx = np.array(xmin).reshape((-1, 1))
-        ly = np.array(ystable)
-        model.fit(lx, ly)
-        r_sq = model.score(lx, ly)
-        y_pred = model.intercept_ + model.coef_ * xmin
 
         ax = pyplot.subplot(142)
         ax.plot(xmin, ystable, marker="o", label="Ih Slope")
@@ -244,4 +245,4 @@ def calculateInputResistanceAndIhSag(cellbuilder, traces= None, params = None, m
 
 
 
-    return (resistancemeanstable, resistancemeanmax), (xmin, ystable)
+    return {"res_stablemean": resistancemeanstable, "res_maxmean": resistancemeanmax, "ih_slope": model.coef_}

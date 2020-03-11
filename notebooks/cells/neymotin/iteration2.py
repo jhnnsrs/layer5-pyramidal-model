@@ -13,7 +13,7 @@ class Config(BaseConfig):
 
 
     # Synapse settings
-    nsynapses = 10
+    nsynapses = 25
     synapsei = -0.0001
     synapsee = -45
     synapseweight = -0.0001
@@ -52,7 +52,7 @@ class Config(BaseConfig):
     # h-current
     erev_ih = -37.0  # global
     gbar_h = 0.000140956438043
-    gbar_h_soma = gbar_h * h_somaModifier
+    gbar_h_soma = gbar_h
     h_gbar_tuft = 0.00565  # mho/cm^2 (based on Harnett 2015 J Neurosci)
 
     # d-current
@@ -93,6 +93,8 @@ class Config(BaseConfig):
         super().__init__(**kwargs)
         self.gbar_h_soma = self.gbar_h * self.h_somaModifier
         self.axonL = 594.292937602 - self.aisL
+
+        print(f'Cell with {self.aisL} µm AIS, hSoma {self.gbar_h_soma} and {self.nsynapses}')
 
     def setDistributions(self):
         pass
@@ -199,7 +201,7 @@ class SPI6(object):
         sec.gcalbar_neycal = self.c.cal_gcalbar
         sec.gcanbar_neycan = self.c.can_gcanbar
         sec.gpeak_neykBK = self.c.kBK_gpeak
-        sec.caVhmin_neykBK = -46.08 +self.c.kBK_caVhminShift
+        sec.caVhmin_neykBK = -46.08 + self.c.kBK_caVhminShift
         sec.depth_neycadad = self.c.cadad_depth
         sec.taur_neycadad = self.c.cadad_taur
 
@@ -256,6 +258,7 @@ class SPI6(object):
             sec.vhalfn_neykap = self.c.kap_vhalfn  # K-A kinetics
             sec.vhalfl_neykap = self.c.kap_vhalfl
             sec.tq_neykap = self.c.kap_tq
+
         self.set_somag()
         self.set_bdendg()
         self.set_apicg()

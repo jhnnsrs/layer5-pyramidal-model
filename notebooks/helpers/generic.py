@@ -6,7 +6,7 @@ from matplotlib import pyplot
 from neuron import h
 
 
-def stimulate(cellbuilder, param, apthreshold = 30, synmodifier = 0.2):
+def stimulate(cellbuilder, param, apthreshold = 30, synmodifier = 0.03, interval = 7):
     cell = cellbuilder()
     singlepulse = h.IClamp(cell.soma(0.5))
     singlepulse.delay = param["delay"]
@@ -18,8 +18,8 @@ def stimulate(cellbuilder, param, apthreshold = 30, synmodifier = 0.2):
 
 
     netstim0 = h.NetStim()
-    netstim0.interval = 50
-    netstim0.number = 10
+    netstim0.interval = interval
+    netstim0.number = int(param["dur"] / interval)
     netstim0.start = param["delay"]
 
     netstim0.noise = 0

@@ -60,8 +60,3 @@ def calculateRheobase(cellbuilder, start= -0.2, precisiondigits = 2, intialincre
         
     return (undertrace, overtrace)
 
-
-
-
-
-       }
